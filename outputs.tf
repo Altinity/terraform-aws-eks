@@ -95,8 +95,6 @@ output "workers_asg_arns" {
   value = concat(
     [for i in aws_autoscaling_group.workers : i.arn],
     [for i in aws_autoscaling_group.workers_launch_template : i.arn]
-    #aws_autoscaling_group.workers.*.arn,
-    #aws_autoscaling_group.workers_launch_template.*.arn,
   )
 }
 
@@ -105,8 +103,6 @@ output "workers_asg_names" {
   value = concat(
     [for i in aws_autoscaling_group.workers : i.id],
     [for i in aws_autoscaling_group.workers_launch_template: i.id]
-    #aws_autoscaling_group.workers.*.id,
-    #aws_autoscaling_group.workers_launch_template.*.id,
   )
 }
 
@@ -131,20 +127,17 @@ output "workers_default_ami_id_windows" {
 output "workers_launch_template_ids" {
   description = "IDs of the worker launch templates."
   value       = [for i in aws_launch_template.workers_launch_template : i.id]
-  #value       = aws_launch_template.workers_launch_template.*.id
 
 }
 
 output "workers_launch_template_arns" {
   description = "ARNs of the worker launch templates."
   value       = [for i in aws_launch_template.workers_launch_template : i.arn]
-  #value       = aws_launch_template.workers_launch_template.*.arn
 }
 
 output "workers_launch_template_latest_versions" {
   description = "Latest versions of the worker launch templates."
   value       = [for i in aws_launch_template.workers_launch_template : i.latest_version]
-  #value       = aws_launch_template.workers_launch_template.*.latest_version
 }
 
 output "worker_security_group_id" {
@@ -162,7 +155,6 @@ output "worker_iam_instance_profile_arns" {
 
 output "worker_iam_instance_profile_names" {
   description = "default IAM instance profile name for EKS worker groups"
-  #value = toset([for i in aws_iam_instance_profile.workers: i.name])
   value = concat(
     [for i in aws_iam_instance_profile.workers: i.name],
     [for i in aws_iam_instance_profile.workers_launch_template: i.name]
@@ -175,8 +167,6 @@ output "worker_iam_role_name" {
     aws_iam_role.workers.*.name,
     [for i in data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile: i.role_name],
     [for i in data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile : i.role_name ],
-    #data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_name,
-    #data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_name,
     [""]
   )[0]
 }
@@ -187,8 +177,6 @@ output "worker_iam_role_arn" {
     aws_iam_role.workers.*.arn,
     [for i in data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile: i.role_arn],
     [for i in data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile : i.role_arn ],
-    #data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_arn,
-    #data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_arn,
     [""]
   )[0]
 }

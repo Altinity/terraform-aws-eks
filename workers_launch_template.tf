@@ -1,7 +1,6 @@
 # Worker Groups using Launch Templates
 
 resource "aws_autoscaling_group" "workers_launch_template" {
-  #count = var.create_eks ? local.worker_group_launch_template_count : 0
   for_each = var.create_eks ? local.worker_groups_launch_template_map : null
 
   name_prefix = join(
@@ -290,7 +289,6 @@ resource "aws_autoscaling_group" "workers_launch_template" {
 }
 
 resource "aws_launch_template" "workers_launch_template" {
-  #count = var.create_eks ? (local.worker_group_launch_template_count) : 0
   for_each = var.create_eks ? local.worker_groups_launch_template_map : null
 
   name_prefix = "${local.cluster_name}-${lookup(
@@ -631,9 +629,7 @@ resource "aws_launch_template" "workers_launch_template" {
 }
 
 resource "aws_iam_instance_profile" "workers_launch_template" {
-  #count = var.manage_worker_iam_resources && var.create_eks ? local.worker_group_launch_template_count : 0
   for_each = var.manage_worker_iam_resources && var.create_eks ? local.worker_groups_launch_template_map : null
-  #for_each = local.worker_groups_launch_template_map
 
   name_prefix = local.cluster_name
   role = lookup(

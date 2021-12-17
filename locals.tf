@@ -176,7 +176,6 @@ locals {
   }) : ""
 
   launch_configuration_userdata_rendered = {
-    #for index in range(var.create_eks ? local.worker_group_launch_configuration_count : 0) : templatefile(
     for k, v in ( var.create_eks ? local.worker_groups_map : null ) : k => templatefile (
       lookup(
         v,
@@ -221,7 +220,6 @@ locals {
   }
 
   launch_template_userdata_rendered = {
-    #for index in range(var.create_eks ? local.worker_group_launch_template_count : 0) : templatefile(
     for k, v in ( var.create_eks ? local.worker_groups_launch_template_map : null ) : k => templatefile (
       lookup(
         v,

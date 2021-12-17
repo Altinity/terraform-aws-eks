@@ -69,9 +69,8 @@ data "aws_iam_role" "custom_cluster_iam_role" {
 }
 
 data "aws_iam_instance_profile" "custom_worker_group_iam_instance_profile" {
-  #for_each = ! var.manage_worker_iam_resources ? local.worker_groups_map : {}
   for_each = {for i in var.worker_groups : i.name => i if ! var.manage_worker_iam_resources}
-  #count = var.manage_worker_iam_resources ? 0 : local.worker_group_launch_configuration_count
+
 
   name = lookup(
     each.value,
@@ -81,9 +80,7 @@ data "aws_iam_instance_profile" "custom_worker_group_iam_instance_profile" {
 }
 
 data "aws_iam_instance_profile" "custom_worker_group_launch_template_iam_instance_profile" {
-  #count = var.manage_worker_iam_resources ? 0 : local.worker_group_launch_template_count
   for_each = {for i in var.worker_groups_launch_template : i.name => i if ! var.manage_worker_iam_resources}
-  #for_each = var.manage_worker_iam_resources ? {} : local.worker_groups_launch_template_map
 
   name = lookup(
     each.value,

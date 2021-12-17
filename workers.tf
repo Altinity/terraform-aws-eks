@@ -1,10 +1,7 @@
 # Worker Groups using Launch Configurations
 
 resource "aws_autoscaling_group" "workers" {
-  #count = var.create_eks ? local.worker_group_launch_configuration_count : 0
   for_each = var.create_eks ? local.worker_groups_map : null
-
-
 
   name_prefix = join(
     "-",
@@ -205,7 +202,6 @@ resource "aws_autoscaling_group" "workers" {
 }
 
 resource "aws_launch_configuration" "workers" {
-  #count = var.create_eks ? local.worker_group_launch_configuration_count : 0
   for_each = var.create_eks ? local.worker_groups_map : null #{ for wg in [{}] : wg => wg }
 
   name_prefix = "${local.cluster_name}-${lookup(each.value, "name", each.key)}"
@@ -223,14 +219,8 @@ resource "aws_launch_configuration" "workers" {
       local.workers_group_defaults["additional_security_group_ids"]
     )
   ])
-  #iam_instance_profile = coalescelist(
-  #  aws_iam_instance_profile.workers.*.id,
-  #  data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.name,
-  #)[count.index]
   iam_instance_profile = coalesce(try(aws_iam_instance_profile.workers[each.key].id,""),
   try(data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile[each.key].name,""))
-  #iam_instance_profile = coalesce(lookup(aws_iam_instance_profile.workers, each.key, {"id" = ""}).id,
-  #lookup(data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile, each.key, {"name" = ""}).name )
   image_id = lookup(
     each.value,
     "ami_id",
@@ -495,9 +485,7 @@ resource "aws_iam_role" "workers" {
 }
 
 resource "aws_iam_instance_profile" "workers" {
-  #count = var.manage_worker_iam_resources && var.create_eks ? local.worker_group_launch_configuration_count : 0
   for_each = var.manage_worker_iam_resources && var.create_eks ? local.worker_groups_map : null
-  #for_each = local.worker_groups_map
 
   name_prefix = local.cluster_name
   role = lookup(
@@ -536,10 +524,8 @@ resource "aws_iam_role_policy_attachment" "workers_AmazonEC2ContainerRegistryRea
 }
 
 resource "aws_iam_role_policy_attachment" "workers_additional_policies" {
-  #count = var.manage_worker_iam_resources && var.create_eks ? length(var.workers_additional_policies) : 0
   for_each = var.manage_worker_iam_resources && var.create_eks ? toset(var.workers_additional_policies) : null
 
   role       = aws_iam_role.workers[0].name
-  #policy_arn = var.workers_additional_policies[count.index]
   policy_arn = each.value
 }
