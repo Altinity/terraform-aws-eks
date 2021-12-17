@@ -22,6 +22,8 @@ locals {
 
   worker_group_launch_configuration_count = length(var.worker_groups)
   worker_group_launch_template_count      = length(var.worker_groups_launch_template)
+  worker_groups_map = { for wg in var.worker_groups : wg.name => wg }
+  worker_groups_launch_template_map = { for wglt in var.worker_groups_launch_template : wglt.name => wglt }
 
   worker_groups_platforms = [for x in concat(var.worker_groups, var.worker_groups_launch_template) : try(x.platform, var.workers_group_defaults["platform"], var.default_platform)]
 
@@ -173,91 +175,93 @@ locals {
     aws_authenticator_env_variables         = var.kubeconfig_aws_authenticator_env_variables
   }) : ""
 
-  launch_configuration_userdata_rendered = [
-    for index in range(var.create_eks ? local.worker_group_launch_configuration_count : 0) : templatefile(
+  launch_configuration_userdata_rendered = {
+    #for index in range(var.create_eks ? local.worker_group_launch_configuration_count : 0) : templatefile(
+    for k, v in ( var.create_eks ? local.worker_groups_map : null ) : k => templatefile (
       lookup(
-        var.worker_groups[index],
+        v,
         "userdata_template_file",
-        lookup(var.worker_groups[index], "platform", local.workers_group_defaults["platform"]) == "windows"
+        lookup(v, "platform", local.workers_group_defaults["platform"]) == "windows"
         ? "${path.module}/templates/userdata_windows.tpl"
         : "${path.module}/templates/userdata.sh.tpl"
       ),
       merge({
-        platform            = lookup(var.worker_groups[index], "platform", local.workers_group_defaults["platform"])
+        platform            = lookup(v, "platform", local.workers_group_defaults["platform"])
         cluster_name        = local.cluster_name
         endpoint            = local.cluster_endpoint
         cluster_auth_base64 = local.cluster_auth_base64
         pre_userdata = lookup(
-          var.worker_groups[index],
+          v,
           "pre_userdata",
           local.workers_group_defaults["pre_userdata"],
         )
         additional_userdata = lookup(
-          var.worker_groups[index],
+          v,
           "additional_userdata",
           local.workers_group_defaults["additional_userdata"],
         )
         bootstrap_extra_args = lookup(
-          var.worker_groups[index],
+          v,
           "bootstrap_extra_args",
           local.workers_group_defaults["bootstrap_extra_args"],
         )
         kubelet_extra_args = lookup(
-          var.worker_groups[index],
+          v,
           "kubelet_extra_args",
           local.workers_group_defaults["kubelet_extra_args"],
         )
         },
         lookup(
-          var.worker_groups[index],
+          v,
           "userdata_template_extra_args",
           local.workers_group_defaults["userdata_template_extra_args"]
         )
       )
     )
-  ]
+  }
 
-  launch_template_userdata_rendered = [
-    for index in range(var.create_eks ? local.worker_group_launch_template_count : 0) : templatefile(
+  launch_template_userdata_rendered = {
+    #for index in range(var.create_eks ? local.worker_group_launch_template_count : 0) : templatefile(
+    for k, v in ( var.create_eks ? local.worker_groups_launch_template_map : null ) : k => templatefile (
       lookup(
-        var.worker_groups_launch_template[index],
+        v,
         "userdata_template_file",
-        lookup(var.worker_groups_launch_template[index], "platform", local.workers_group_defaults["platform"]) == "windows"
+        lookup(v, "platform", local.workers_group_defaults["platform"]) == "windows"
         ? "${path.module}/templates/userdata_windows.tpl"
         : "${path.module}/templates/userdata.sh.tpl"
       ),
       merge({
-        platform            = lookup(var.worker_groups_launch_template[index], "platform", local.workers_group_defaults["platform"])
+        platform            = lookup(v, "platform", local.workers_group_defaults["platform"])
         cluster_name        = local.cluster_name
         endpoint            = local.cluster_endpoint
         cluster_auth_base64 = local.cluster_auth_base64
         pre_userdata = lookup(
-          var.worker_groups_launch_template[index],
+          v,
           "pre_userdata",
           local.workers_group_defaults["pre_userdata"],
         )
         additional_userdata = lookup(
-          var.worker_groups_launch_template[index],
+          v,
           "additional_userdata",
           local.workers_group_defaults["additional_userdata"],
         )
         bootstrap_extra_args = lookup(
-          var.worker_groups_launch_template[index],
+          v,
           "bootstrap_extra_args",
           local.workers_group_defaults["bootstrap_extra_args"],
         )
         kubelet_extra_args = lookup(
-          var.worker_groups_launch_template[index],
+          v,
           "kubelet_extra_args",
           local.workers_group_defaults["kubelet_extra_args"],
         )
         },
         lookup(
-          var.worker_groups_launch_template[index],
+          v,
           "userdata_template_extra_args",
           local.workers_group_defaults["userdata_template_extra_args"]
         )
       )
     )
-  ]
+  }
 }
