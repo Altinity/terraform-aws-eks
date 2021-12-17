@@ -93,24 +93,28 @@ output "oidc_provider_arn" {
 output "workers_asg_arns" {
   description = "IDs of the autoscaling groups containing workers."
   value = concat(
-    aws_autoscaling_group.workers.*.arn,
-    aws_autoscaling_group.workers_launch_template.*.arn,
+    [for i in aws_autoscaling_group.workers : i.arn],
+    [for i in aws_autoscaling_group.workers_launch_template : i.arn]
+    #aws_autoscaling_group.workers.*.arn,
+    #aws_autoscaling_group.workers_launch_template.*.arn,
   )
 }
 
 output "workers_asg_names" {
   description = "Names of the autoscaling groups containing workers."
   value = concat(
-    aws_autoscaling_group.workers.*.id,
-    aws_autoscaling_group.workers_launch_template.*.id,
+    [for i in aws_autoscaling_group.workers : i.id],
+    [for i in aws_autoscaling_group.workers_launch_template: i.id]
+    #aws_autoscaling_group.workers.*.id,
+    #aws_autoscaling_group.workers_launch_template.*.id,
   )
 }
 
 output "workers_user_data" {
   description = "User data of worker groups"
   value = concat(
-    local.launch_configuration_userdata_rendered,
-    local.launch_template_userdata_rendered,
+    [for i in local.launch_configuration_userdata_rendered: i],
+    [for i in local.launch_template_userdata_rendered: i],
   )
 }
 
@@ -126,17 +130,21 @@ output "workers_default_ami_id_windows" {
 
 output "workers_launch_template_ids" {
   description = "IDs of the worker launch templates."
-  value       = aws_launch_template.workers_launch_template.*.id
+  value       = [for i in aws_launch_template.workers_launch_template : i.id]
+  #value       = aws_launch_template.workers_launch_template.*.id
+
 }
 
 output "workers_launch_template_arns" {
   description = "ARNs of the worker launch templates."
-  value       = aws_launch_template.workers_launch_template.*.arn
+  value       = [for i in aws_launch_template.workers_launch_template : i.arn]
+  #value       = aws_launch_template.workers_launch_template.*.arn
 }
 
 output "workers_launch_template_latest_versions" {
   description = "Latest versions of the worker launch templates."
-  value       = aws_launch_template.workers_launch_template.*.latest_version
+  value       = [for i in aws_launch_template.workers_launch_template : i.latest_version]
+  #value       = aws_launch_template.workers_launch_template.*.latest_version
 }
 
 output "worker_security_group_id" {
@@ -147,16 +155,17 @@ output "worker_security_group_id" {
 output "worker_iam_instance_profile_arns" {
   description = "default IAM instance profile ARN for EKS worker groups"
   value = concat(
-    aws_iam_instance_profile.workers.*.arn,
-    aws_iam_instance_profile.workers_launch_template.*.arn
+    [for i in aws_iam_instance_profile.workers: i.arn],
+    [for i in aws_iam_instance_profile.workers_launch_template: i.arn]
   )
 }
 
 output "worker_iam_instance_profile_names" {
   description = "default IAM instance profile name for EKS worker groups"
+  #value = toset([for i in aws_iam_instance_profile.workers: i.name])
   value = concat(
-    aws_iam_instance_profile.workers.*.name,
-    aws_iam_instance_profile.workers_launch_template.*.name
+    [for i in aws_iam_instance_profile.workers: i.name],
+    [for i in aws_iam_instance_profile.workers_launch_template: i.name]
   )
 }
 
@@ -164,8 +173,10 @@ output "worker_iam_role_name" {
   description = "default IAM role name for EKS worker groups"
   value = coalescelist(
     aws_iam_role.workers.*.name,
-    data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_name,
-    data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_name,
+    [for i in data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile: i.role_name],
+    [for i in data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile : i.role_name ],
+    #data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_name,
+    #data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_name,
     [""]
   )[0]
 }
@@ -174,8 +185,10 @@ output "worker_iam_role_arn" {
   description = "default IAM role ARN for EKS worker groups"
   value = coalescelist(
     aws_iam_role.workers.*.arn,
-    data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_arn,
-    data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_arn,
+    [for i in data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile: i.role_arn],
+    [for i in data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile : i.role_arn ],
+    #data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_arn,
+    #data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_arn,
     [""]
   )[0]
 }

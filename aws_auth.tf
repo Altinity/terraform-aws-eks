@@ -3,8 +3,8 @@ locals {
     for index in range(0, var.create_eks ? local.worker_group_launch_template_count : 0) : {
       worker_role_arn = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/${element(
         coalescelist(
-          aws_iam_instance_profile.workers_launch_template.*.role,
-          data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile.*.role_name,
+          [for i in aws_iam_instance_profile.workers_launch_template : i.role],
+          [for i in data.aws_iam_instance_profile.custom_worker_group_launch_template_iam_instance_profile : i.role_name],
           [""]
         ),
         index
@@ -21,8 +21,8 @@ locals {
     for index in range(0, var.create_eks ? local.worker_group_launch_configuration_count : 0) : {
       worker_role_arn = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/${element(
         coalescelist(
-          aws_iam_instance_profile.workers.*.role,
-          data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile.*.role_name,
+          [for i in aws_iam_instance_profile.workers : i.role],
+          [for i in data.aws_iam_instance_profile.custom_worker_group_iam_instance_profile : i.role_name],
           [""]
         ),
         index,
