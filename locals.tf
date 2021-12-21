@@ -22,8 +22,8 @@ locals {
 
   worker_group_launch_configuration_count = length(var.worker_groups)
   worker_group_launch_template_count      = length(var.worker_groups_launch_template)
-  worker_groups_map = { for wg in var.worker_groups : wg.name => wg }
-  worker_groups_launch_template_map = { for wglt in var.worker_groups_launch_template : wglt.name => wglt }
+  worker_groups_map = { for wg in var.worker_groups : "${wg.name}-${join("-",wg.subnets)}" => wg }
+  worker_groups_launch_template_map = { for wglt in var.worker_groups_launch_template : "${wglt.name}-${join("-",wglt.subnets)}" => wglt }
 
   worker_groups_platforms = [for x in concat(var.worker_groups, var.worker_groups_launch_template) : try(x.platform, var.workers_group_defaults["platform"], var.default_platform)]
 
